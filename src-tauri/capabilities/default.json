@@ -1,0 +1,19 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "main-window",
+  "description": "LabForge commands for the trusted main window. No core, plugin, filesystem, shell or network permissions are granted.",
+  "windows": ["main"],
+  "permissions": [
+    "allow-list-challenges",
+    "allow-get-challenge",
+    "allow-create-challenge",
+    "allow-update-challenge",
+    "allow-delete-challenge",
+    "allow-start-attempt",
+    "allow-get-attempt",
+    "allow-complete-step",
+    "allow-save-note",
+    "allow-get-dashboard",
+    "allow-open-external-link"
+  ]
+}

@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-create-challenge"
+description = "Enables the create_challenge command without any pre-configured scope."
+commands.allow = ["create_challenge"]
+
+[[permission]]
+identifier = "deny-create-challenge"
+description = "Denies the create_challenge command without any pre-configured scope."
+commands.deny = ["create_challenge"]

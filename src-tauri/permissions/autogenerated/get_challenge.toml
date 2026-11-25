@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-get-challenge"
+description = "Enables the get_challenge command without any pre-configured scope."
+commands.allow = ["get_challenge"]
+
+[[permission]]
+identifier = "deny-get-challenge"
+description = "Denies the get_challenge command without any pre-configured scope."
+commands.deny = ["get_challenge"]

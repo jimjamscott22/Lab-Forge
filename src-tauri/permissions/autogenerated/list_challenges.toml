@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-list-challenges"
+description = "Enables the list_challenges command without any pre-configured scope."
+commands.allow = ["list_challenges"]
+
+[[permission]]
+identifier = "deny-list-challenges"
+description = "Denies the list_challenges command without any pre-configured scope."
+commands.deny = ["list_challenges"]

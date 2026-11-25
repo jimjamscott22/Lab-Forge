@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-update-challenge"
+description = "Enables the update_challenge command without any pre-configured scope."
+commands.allow = ["update_challenge"]
+
+[[permission]]
+identifier = "deny-update-challenge"
+description = "Denies the update_challenge command without any pre-configured scope."
+commands.deny = ["update_challenge"]

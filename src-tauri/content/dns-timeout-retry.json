@@ -1,0 +1,127 @@
+{
+  "slug": "dns-timeout-retry",
+  "version": 1,
+  "title": "Read a DNS timeout and retry",
+  "summary": "Use a packet capture to find the client and resolver, compare a normal DNS answer with a lost query, and write up what you saw.",
+  "difficulty": "beginner",
+  "objectivesMd": "By the end of this exercise you can:\n\n- Tell the client from the resolver in a DNS capture.\n- Recognise a normal query and answer pair.\n- Recognise a query that was never answered and the retry that follows.\n- Write a short finding that points to specific packets.\n\nEverything here is fictional and runs offline. You do not need Wireshark: the packet summary below has the same fields.",
+  "steps": [
+    {
+      "stepKey": "identify-hosts",
+      "kind": "task",
+      "title": "Find the client and the resolver",
+      "instructionsMd": "Open the packet summary and read packets 1 and 2.\n\nThe **client** is the host that sends the first query. The **resolver** is the host that answers it. DNS servers listen on a well-known port, so the port numbers help too.\n\nWrite down both addresses and which side uses port 53.",
+      "completionCriteria": "You can name the client address, the resolver address, and the port the resolver listens on.",
+      "hints": [
+        "Look at the Source column of packet 1. Is the source port a low, well-known number or a high, temporary one?",
+        "The resolver answers from the address and port the client sent the query to."
+      ]
+    },
+    {
+      "stepKey": "compare-lookups",
+      "kind": "task",
+      "title": "Compare the two lookups",
+      "instructionsMd": "The capture holds two lookups.\n\n1. `intranet.example.test` in packets 1 and 2.\n2. `files.example.test` in packets 3 to 5.\n\nFor each one, note how long the answer took and whether anything was sent twice. Pay attention to the **transaction ID** in the Info column and the **time offset**.",
+      "completionCriteria": "You have noted the response time of the first lookup and what happened before the second lookup was answered.",
+      "hints": [
+        "A DNS response carries the same transaction ID as the query it answers.",
+        "Compare the time offset of packet 3 with packet 4. How long did the client wait?"
+      ]
+    },
+    {
+      "stepKey": "diagnosis-check",
+      "kind": "check",
+      "title": "Choose the evidence for the diagnosis",
+      "instructionsMd": "A colleague says the first query for `files.example.test` was lost and the client retried. Which observation in the capture best supports that?",
+      "completionCriteria": "Choose the observation that supports the diagnosis.",
+      "hints": [
+        "A retry is the same question asked again. What stays the same between packets 3 and 4?"
+      ],
+      "choices": [
+        {
+          "label": "Packet 4 repeats the query from packet 3 with the same transaction ID about two seconds later, and no response appears in between.",
+          "isCorrect": true,
+          "explanation": "Correct. The same ID, the same name, and a two-second gap with no response in between is how a timeout and retry look in a capture."
+        },
+        {
+          "label": "Packet 2 shows the resolver answering with NOERROR.",
+          "isCorrect": false,
+          "explanation": "That answer belongs to the first lookup, intranet.example.test. It shows a healthy lookup, not a lost one."
+        },
+        {
+          "label": "The client uses a different source port for each lookup.",
+          "isCorrect": false,
+          "explanation": "Clients normally pick a new source port for each new lookup, so this is expected and says nothing about loss."
+        },
+        {
+          "label": "Both hosts use private addresses.",
+          "isCorrect": false,
+          "explanation": "Private addresses are normal inside a network and do not show whether a query was lost."
+        }
+      ]
+    },
+    {
+      "stepKey": "write-finding",
+      "kind": "note",
+      "title": "Write your finding",
+      "instructionsMd": "Open the notebook and write a short finding, three or four sentences. Name the client and resolver, say which lookup failed first, and cite packet numbers as evidence.\n\nFor example: *The client 10.20.0.15 asked resolver 10.20.0.2 for ... in packet 3.*",
+      "completionCriteria": "Your notebook has a written finding. Citing packet numbers makes it stronger.",
+      "hints": [
+        "State the symptom first, then the evidence, then your conclusion."
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "evidenceKey": "dns-capture",
+      "title": "DNS capture, lab-client to lab-resolver",
+      "packets": [
+        {
+          "no": 1,
+          "offsetMs": 0,
+          "source": "10.20.0.15:51842",
+          "destination": "10.20.0.2:53",
+          "protocol": "DNS",
+          "length": 84,
+          "info": "Standard query 0x1a2b A intranet.example.test"
+        },
+        {
+          "no": 2,
+          "offsetMs": 12,
+          "source": "10.20.0.2:53",
+          "destination": "10.20.0.15:51842",
+          "protocol": "DNS",
+          "length": 100,
+          "info": "Standard query response 0x1a2b NOERROR A intranet.example.test 10.20.0.40"
+        },
+        {
+          "no": 3,
+          "offsetMs": 4310,
+          "source": "10.20.0.15:51901",
+          "destination": "10.20.0.2:53",
+          "protocol": "DNS",
+          "length": 81,
+          "info": "Standard query 0x3c4d A files.example.test"
+        },
+        {
+          "no": 4,
+          "offsetMs": 6312,
+          "source": "10.20.0.15:51901",
+          "destination": "10.20.0.2:53",
+          "protocol": "DNS",
+          "length": 81,
+          "info": "Standard query 0x3c4d A files.example.test"
+        },
+        {
+          "no": 5,
+          "offsetMs": 6355,
+          "source": "10.20.0.2:53",
+          "destination": "10.20.0.15:51901",
+          "protocol": "DNS",
+          "length": 97,
+          "info": "Standard query response 0x3c4d NOERROR A files.example.test 10.20.0.41"
+        }
+      ]
+    }
+  ]
+}
