@@ -1,0 +1,12 @@
+node_modules/
+dist/
+coverage/
+src-tauri/target/
+src-tauri/gen/
+.remember/
+.claude/settings.local.json
+*.db
+*.db-shm
+*.db-wal
+.DS_Store
+.vitest/
