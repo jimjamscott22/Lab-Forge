@@ -1,0 +1,110 @@
+@import "tailwindcss";
+@import "@fontsource/atkinson-hyperlegible/latin-400.css";
+@import "@fontsource/atkinson-hyperlegible/latin-700.css";
+@import "@fontsource/jetbrains-mono/latin-400.css";
+
+@theme {
+  --font-sans: "Atkinson Hyperlegible", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+
+  /* Charcoal surfaces */
+  --color-ink-950: #151718;
+  --color-ink-900: #1b1e1f;
+  --color-ink-800: #232728;
+  --color-ink-700: #2e3436;
+  --color-ink-600: #414849;
+
+  /* Text */
+  --color-paper: #e6e8e4;
+  --color-mist: #a9b1b0;
+
+  /* Muted green accent, and a clay red used only for errors */
+  --color-moss-300: #a6c4ad;
+  --color-moss-400: #86a98f;
+  --color-moss-600: #4f6e58;
+  --color-clay-400: #e0877a;
+}
+
+@layer base {
+  html {
+    color-scheme: dark;
+  }
+  body {
+    background: var(--color-ink-900);
+    color: var(--color-paper);
+    font-family: var(--font-sans);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  :focus-visible {
+    outline: 3px solid var(--color-moss-300);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+/* Rendered Markdown. Raw HTML is never rendered, so these element rules are the only styling. */
+.prose-lab {
+  max-width: 68ch;
+}
+.prose-lab > * + * {
+  margin-top: 0.85em;
+}
+.prose-lab h1,
+.prose-lab h2,
+.prose-lab h3 {
+  font-weight: 700;
+  line-height: 1.25;
+  margin-top: 1.2em;
+}
+.prose-lab ul {
+  list-style: disc;
+  padding-left: 1.4em;
+}
+.prose-lab ol {
+  list-style: decimal;
+  padding-left: 1.4em;
+}
+.prose-lab li + li {
+  margin-top: 0.3em;
+}
+.prose-lab code {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  background: var(--color-ink-700);
+  padding: 0.1em 0.35em;
+  border-radius: 3px;
+}
+.prose-lab pre {
+  background: var(--color-ink-950);
+  padding: 0.8em 1em;
+  border-radius: 4px;
+  overflow-x: auto;
+}
+.prose-lab pre code {
+  background: none;
+  padding: 0;
+}
+.prose-lab blockquote {
+  border-left: 3px solid var(--color-moss-600);
+  padding-left: 1em;
+  color: var(--color-mist);
+}
+.prose-lab a,
+.prose-lab .link-inert {
+  color: var(--color-moss-300);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.prose-lab button.link {
+  color: var(--color-moss-300);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
