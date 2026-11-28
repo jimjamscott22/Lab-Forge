@@ -16,6 +16,8 @@ use crate::models::progress::*;
 use crate::repositories::{challenges as challenge_repo, progress as repo};
 
 const RECENT_ATTEMPTS: i64 = 5;
+/// Most attempts the history view returns; the UI says when it hits this.
+pub const HISTORY_LIMIT: i64 = 200;
 
 pub async fn start(pool: &SqlitePool, challenge_id: i64) -> AppResult<AttemptView> {
     let mut tx = pool.begin().await?;
@@ -170,6 +172,21 @@ pub async fn dashboard(pool: &SqlitePool) -> AppResult<DashboardSummary> {
             .await?,
         recent: repo::recent_cards(&mut conn, RECENT_ATTEMPTS).await?,
     })
+}
+
+/// Every attempt, newest first. With a challenge id, every version of that challenge's
+/// slug is included, so a retry after a content update still shows the older attempts.
+pub async fn history(pool: &SqlitePool, challenge_id: Option<i64>) -> AppResult<Vec<AttemptCard>> {
+    let mut conn = pool.acquire().await?;
+    let slug = match challenge_id {
+        Some(id) => Some(
+            challenge_repo::slug_of(&mut conn, id)
+                .await?
+                .ok_or(AppError::NotFound("Challenge"))?,
+        ),
+        None => None,
+    };
+    repo::history_cards(&mut conn, slug.as_deref(), HISTORY_LIMIT).await
 }
 
 #[cfg(test)]
@@ -518,5 +535,143 @@ mod tests {
 
         let current = dashboard(&reopened).await.unwrap().current.unwrap();
         assert_eq!(current.attempt_id, id);
+    }
+
+    #[tokio::test]
+    async fn history_keeps_the_previous_attempt_intact_after_a_retry() {
+        let db = fresh().await;
+        let cid = setup(&db.pool).await;
+        let first = start(&db.pool, cid).await.unwrap().attempt.id;
+        finish(&db.pool, first).await;
+        let retry = start(&db.pool, cid).await.unwrap();
+        complete_step(&db.pool, retry.attempt.id, step_ids(&retry)[0], None)
+            .await
+            .unwrap();
+
+        let cards = history(&db.pool, None).await.unwrap();
+        assert_eq!(
+            cards.iter().map(|c| c.attempt_id).collect::<Vec<_>>(),
+            vec![retry.attempt.id, first]
+        );
+        assert_eq!(
+            (cards[0].status, cards[0].steps_completed),
+            (AttemptStatus::InProgress, 1)
+        );
+        assert_eq!(
+            (
+                cards[1].status,
+                cards[1].steps_completed,
+                cards[1].steps_total
+            ),
+            (AttemptStatus::Completed, 4, 4)
+        );
+        assert_eq!(cards[1].challenge_version, 1);
+        assert_eq!(
+            get(&db.pool, first).await.unwrap().note.unwrap().body_md,
+            "Packet 4 retried packet 3."
+        );
+    }
+
+    #[tokio::test]
+    async fn history_for_a_challenge_includes_every_version_of_its_slug() {
+        let db = fresh().await;
+        let v1 = setup(&db.pool).await;
+        let first = start(&db.pool, v1).await.unwrap().attempt.id;
+        finish(&db.pool, first).await;
+
+        // Ship v2 of the same exercise, as the version-preservation test does.
+        let bundled = crate::content::bundled_challenges().unwrap().remove(0);
+        let draft = crate::services::validation::normalize(bundled.draft);
+        let mut conn = db.pool.acquire().await.unwrap();
+        let v2 = challenge_repo::insert(
+            &mut conn,
+            crate::models::challenge::ChallengeSource::Bundled,
+            &bundled.slug,
+            2,
+            &draft,
+        )
+        .await
+        .unwrap();
+        drop(conn);
+        start(&db.pool, v2).await.unwrap();
+
+        for id in [v1, v2] {
+            let cards = history(&db.pool, Some(id)).await.unwrap();
+            assert_eq!(
+                cards
+                    .iter()
+                    .map(|c| c.challenge_version)
+                    .collect::<Vec<_>>(),
+                vec![2, 1]
+            );
+        }
+    }
+
+    #[tokio::test]
+    async fn history_for_a_challenge_excludes_other_challenges() {
+        use crate::models::challenge::{CustomChallengeInput, CustomStepInput, Difficulty};
+        let db = fresh().await;
+        let bundled = setup(&db.pool).await;
+        let custom = crate::services::challenges::create_custom(
+            &db.pool,
+            CustomChallengeInput {
+                title: "My own exercise".into(),
+                summary: "A summary".into(),
+                difficulty: Difficulty::Beginner,
+                objectives_md: "Learn".into(),
+                steps: vec![CustomStepInput {
+                    title: "Step".into(),
+                    instructions_md: "Do".into(),
+                    completion_criteria: "Done".into(),
+                    hint: None,
+                }],
+            },
+        )
+        .await
+        .unwrap()
+        .id;
+        let on_bundled = start(&db.pool, bundled).await.unwrap().attempt.id;
+        start(&db.pool, custom).await.unwrap();
+
+        let filtered = history(&db.pool, Some(bundled)).await.unwrap();
+        assert_eq!(
+            filtered.iter().map(|c| c.attempt_id).collect::<Vec<_>>(),
+            vec![on_bundled]
+        );
+        assert_eq!(history(&db.pool, None).await.unwrap().len(), 2);
+    }
+
+    #[tokio::test]
+    async fn history_for_an_unknown_challenge_is_not_found() {
+        let db = fresh().await;
+        setup(&db.pool).await;
+        assert!(matches!(
+            history(&db.pool, Some(9_999)).await,
+            Err(AppError::NotFound("Challenge"))
+        ));
+    }
+
+    #[tokio::test]
+    async fn history_is_capped_at_the_limit() {
+        let db = fresh().await;
+        let cid = setup(&db.pool).await;
+        sqlx::query(
+            "WITH RECURSIVE n(i) AS (SELECT 1 UNION ALL SELECT i + 1 FROM n WHERE i < ?2) \
+             INSERT INTO attempts (challenge_id, status, completed_at) \
+             SELECT ?1, 'completed', strftime('%Y-%m-%dT%H:%M:%fZ', 'now') FROM n",
+        )
+        .bind(cid)
+        .bind(HISTORY_LIMIT + 1)
+        .execute(&db.pool)
+        .await
+        .unwrap();
+        let max_id: i64 = sqlx::query_scalar("SELECT MAX(id) FROM attempts")
+            .fetch_one(&db.pool)
+            .await
+            .unwrap();
+
+        let cards = history(&db.pool, None).await.unwrap();
+        assert_eq!(cards.len(), HISTORY_LIMIT as usize);
+        assert_eq!(cards[0].attempt_id, max_id);
     }
 }

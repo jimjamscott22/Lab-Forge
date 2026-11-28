@@ -173,7 +173,7 @@ pub async fn upsert_note(
 /// still assembled from string literals at compile time; sqlx 0.9 rejects runtime SQL.
 macro_rules! card_select {
     () => {
-        r"SELECT a.id AS attempt_id, a.challenge_id, c.title AS challenge_title,
+        r"SELECT a.id AS attempt_id, a.challenge_id, c.title AS challenge_title, c.version AS challenge_version,
         a.status, a.started_at, a.completed_at,
         (SELECT COUNT(*) FROM attempt_steps s WHERE s.attempt_id = a.id AND s.status = 'completed') AS steps_completed,
         (SELECT COUNT(*) FROM attempt_steps s WHERE s.attempt_id = a.id) AS steps_total
@@ -195,6 +195,22 @@ pub async fn recent_cards(conn: &mut SqliteConnection, limit: i64) -> AppResult<
         card_select!(),
         " ORDER BY a.started_at DESC, a.id DESC LIMIT ?1"
     ))
+    .bind(limit)
+    .fetch_all(conn)
+    .await?)
+}
+
+/// Attempts newest first, optionally limited to every version of one challenge slug.
+pub async fn history_cards(
+    conn: &mut SqliteConnection,
+    slug: Option<&str>,
+    limit: i64,
+) -> AppResult<Vec<AttemptCard>> {
+    Ok(sqlx::query_as::<_, AttemptCard>(concat!(
+        card_select!(),
+        " WHERE (?1 IS NULL OR c.slug = ?1) ORDER BY a.started_at DESC, a.id DESC LIMIT ?2"
+    ))
+    .bind(slug)
     .bind(limit)
     .fetch_all(conn)
     .await?)

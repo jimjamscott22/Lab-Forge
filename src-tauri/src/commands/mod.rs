@@ -11,7 +11,7 @@ use tauri_plugin_opener::OpenerExt;
 
 use crate::error::{AppError, AppResult};
 use crate::models::challenge::{ChallengeDetail, ChallengeSummary, CustomChallengeInput};
-use crate::models::progress::{AttemptView, DashboardSummary, Note, StepOutcome};
+use crate::models::progress::{AttemptCard, AttemptView, DashboardSummary, Note, StepOutcome};
 use crate::services::{attempts, challenges, links};
 
 pub struct AppState {
@@ -30,6 +30,7 @@ pub const COMMAND_NAMES: &[&str] = &[
     "complete_step",
     "save_note",
     "get_dashboard",
+    "list_attempts",
     "open_external_link",
 ];
 
@@ -106,6 +107,15 @@ pub async fn save_note(
 #[tauri::command]
 pub async fn get_dashboard(state: State<'_, AppState>) -> AppResult<DashboardSummary> {
     attempts::dashboard(&state.pool).await
+}
+
+/// Attempt history, newest first; `challenge_id` narrows it to every version of one challenge.
+#[tauri::command]
+pub async fn list_attempts(
+    state: State<'_, AppState>,
+    challenge_id: Option<i64>,
+) -> AppResult<Vec<AttemptCard>> {
+    attempts::history(&state.pool, challenge_id).await
 }
 
 /// Open a validated `https` link in the system browser. This is the only way the
