@@ -566,9 +566,21 @@ mod tests {
             (AttemptStatus::Completed, 4, 4)
         );
         assert_eq!(cards[1].challenge_version, 1);
+        save_note(&db.pool, retry.attempt.id, "Retry note")
+            .await
+            .unwrap();
         assert_eq!(
             get(&db.pool, first).await.unwrap().note.unwrap().body_md,
             "Packet 4 retried packet 3."
+        );
+        assert_eq!(
+            get(&db.pool, retry.attempt.id)
+                .await
+                .unwrap()
+                .note
+                .unwrap()
+                .body_md,
+            "Retry note"
         );
     }
 
