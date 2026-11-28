@@ -17,6 +17,7 @@ const card = {
   attemptId: 7,
   challengeId: 1,
   challengeTitle: "Read a DNS timeout and retry",
+  challengeVersion: 1,
   status: "in_progress" as const,
   startedAt: "2026-11-24T10:00:00.000Z",
   completedAt: null,

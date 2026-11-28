@@ -1,16 +1,19 @@
 import { useEffect, useRef, useState } from "react";
 import { Challenges } from "./views/Challenges";
 import { Dashboard } from "./views/Dashboard";
+import { History } from "./views/History";
 import { Workspace } from "./views/Workspace";
 
 export type Route =
   | { name: "dashboard" }
   | { name: "challenges" }
+  | { name: "history"; challengeId?: number }
   | { name: "attempt"; attemptId: number };
 
 const NAV = [
   { route: { name: "dashboard" }, label: "Dashboard" },
   { route: { name: "challenges" }, label: "Challenges" },
+  { route: { name: "history" }, label: "History" },
 ] as const satisfies readonly { route: Route; label: string }[];
 
 export default function App() {
@@ -67,6 +70,7 @@ export default function App() {
       <main id="main" ref={main} tabIndex={-1} className="min-w-0 flex-1 px-8 py-8 outline-none">
         {route.name === "dashboard" && <Dashboard navigate={setRoute} />}
         {route.name === "challenges" && <Challenges navigate={setRoute} />}
+        {route.name === "history" && <History challengeId={route.challengeId} navigate={setRoute} />}
         {route.name === "attempt" && <Workspace attemptId={route.attemptId} navigate={setRoute} />}
       </main>
     </div>

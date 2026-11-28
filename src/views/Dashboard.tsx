@@ -1,7 +1,6 @@
 import { api } from "../api/client";
-import type { AttemptCard } from "../api/types";
 import { ProgressSegments } from "../components/ProgressSegments";
-import { formatDateTime, plural } from "../lib/format";
+import { describeAttempt, formatDateTime, plural } from "../lib/format";
 import { useLoad } from "../lib/useLoad";
 import type { Route } from "../App";
 
@@ -81,12 +80,12 @@ export function Dashboard({ navigate }: { navigate: (route: Route) => void }) {
               <li key={card.attemptId} className="flex flex-wrap items-center justify-between gap-3 py-3">
                 <div>
                   <p className="font-bold">{card.challengeTitle}</p>
-                  <p className="text-sm text-mist">{describe(card)}</p>
+                  <p className="text-sm text-mist">{describeAttempt(card)}</p>
                 </div>
                 <button
                   type="button"
                   onClick={() => navigate({ name: "attempt", attemptId: card.attemptId })}
-                  aria-label={`Open attempt: ${card.challengeTitle}, ${describe(card)}`}
+                  aria-label={`Open attempt: ${card.challengeTitle}, ${describeAttempt(card)}`}
                   className="rounded border border-ink-600 px-3 py-1.5 hover:bg-ink-800"
                 >
                   Open
@@ -98,10 +97,4 @@ export function Dashboard({ navigate }: { navigate: (route: Route) => void }) {
       </section>
     </div>
   );
-}
-
-function describe(card: AttemptCard): string {
-  return card.status === "completed"
-    ? `Completed ${card.completedAt ? formatDateTime(card.completedAt) : ""}`.trim()
-    : `In progress, ${card.stepsCompleted} of ${plural(card.stepsTotal, "step")} done`;
 }

@@ -64,3 +64,13 @@ describe("api wrapper", () => {
     expect((error as AppError).message).toBe("Notes can be up to 100000 characters.");
   });
 });
+
+describe("listAttempts", () => {
+  it("sends a null challengeId when unfiltered", async () => {
+    bridge.impl = async () => [];
+    await api.listAttempts();
+    expect(lastCall()).toEqual(["list_attempts", { challengeId: null }]);
+    await api.listAttempts(3);
+    expect(lastCall()).toEqual(["list_attempts", { challengeId: 3 }]);
+  });
+});

@@ -112,6 +112,7 @@ export interface AttemptCard {
   attemptId: number;
   challengeId: number;
   challengeTitle: string;
+  challengeVersion: number;
   status: AttemptStatus;
   startedAt: string;
   completedAt: string | null;
