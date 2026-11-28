@@ -244,6 +244,16 @@ describe("Workspace: finished attempt", () => {
     expect(navigate).toHaveBeenCalledWith({ name: "attempt", attemptId: 8 });
   });
 
+  it("finished attempt links to its challenge history", async () => {
+    const { user, navigate } = renderWorkspace(
+      attemptView({ done: 4, status: "completed", note: "Old attempt note" }),
+    );
+    const summary = await screen.findByRole("region", { name: "Attempt complete" });
+    expect(within(summary).getByText("Old attempt note")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "View attempt history" }));
+    expect(navigate).toHaveBeenCalledWith({ name: "history", challengeId: 1 });
+  });
+
   it("reports why another attempt could not start", async () => {
     const { user } = renderWorkspace(attemptView({ done: 4, status: "completed", note: "x" }));
     mocks.startAttempt.mockRejectedValue(new AppError("conflict", "This challenge already has an attempt in progress. Resume it instead."));

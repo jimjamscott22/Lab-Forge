@@ -60,6 +60,7 @@ pub fn run() {
             commands::complete_step,
             commands::save_note,
             commands::get_dashboard,
+            commands::list_attempts,
             commands::open_external_link,
         ])
         .run(tauri::generate_context!())

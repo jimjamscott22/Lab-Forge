@@ -230,6 +230,15 @@ pub async fn source_of(conn: &mut SqliteConnection, id: i64) -> AppResult<Option
     )
 }
 
+pub async fn slug_of(conn: &mut SqliteConnection, id: i64) -> AppResult<Option<String>> {
+    Ok(
+        sqlx::query_scalar("SELECT slug FROM challenges WHERE id = ?1")
+            .bind(id)
+            .fetch_optional(conn)
+            .await?,
+    )
+}
+
 pub async fn attempt_count(conn: &mut SqliteConnection, challenge_id: i64) -> AppResult<i64> {
     Ok(
         sqlx::query_scalar("SELECT COUNT(*) FROM attempts WHERE challenge_id = ?1")

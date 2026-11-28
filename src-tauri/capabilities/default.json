@@ -14,6 +14,7 @@
     "allow-complete-step",
     "allow-save-note",
     "allow-get-dashboard",
+    "allow-list-attempts",
     "allow-open-external-link"
   ]
 }

@@ -68,6 +68,7 @@ pub struct AttemptCard {
     pub attempt_id: i64,
     pub challenge_id: i64,
     pub challenge_title: String,
+    pub challenge_version: i64,
     pub status: AttemptStatus,
     pub started_at: String,
     pub completed_at: Option<String>,

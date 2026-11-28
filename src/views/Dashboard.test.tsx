@@ -17,6 +17,7 @@ const card = {
   attemptId: 7,
   challengeId: 1,
   challengeTitle: "Read a DNS timeout and retry",
+  challengeVersion: 1,
   status: "in_progress" as const,
   startedAt: "2026-11-24T10:00:00.000Z",
   completedAt: null,
@@ -58,5 +59,20 @@ describe("Dashboard", () => {
     render(<Dashboard navigate={vi.fn()} />);
     expect(await screen.findByText("1 of 1 challenge completed, 2 attempts finished.")).toBeInTheDocument();
     expect(screen.getByText(/^Completed /)).toBeInTheDocument();
+  });
+
+  it("links to the full history", async () => {
+    mocks.getDashboard.mockResolvedValue(dashboard({ recent: [card] }));
+    const navigate = vi.fn();
+    const user = userEvent.setup();
+    const { unmount } = render(<Dashboard navigate={navigate} />);
+    await user.click(await screen.findByRole("button", { name: "See all attempts" }));
+    expect(navigate).toHaveBeenCalledWith({ name: "history" });
+    unmount();
+
+    mocks.getDashboard.mockResolvedValue(dashboard());
+    render(<Dashboard navigate={vi.fn()} />);
+    await screen.findByRole("heading", { name: "Recent attempts" });
+    expect(screen.queryByRole("button", { name: "See all attempts" })).not.toBeInTheDocument();
   });
 });

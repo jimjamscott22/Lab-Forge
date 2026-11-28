@@ -1,4 +1,4 @@
-import type { AttemptView, ChallengeSummary, DashboardSummary, Step } from "../api/types";
+import type { AttemptCard, AttemptView, ChallengeSummary, DashboardSummary, Step } from "../api/types";
 
 const step = (id: number, over: Partial<Step>): Step => ({
   id,
@@ -100,5 +100,18 @@ export const dashboard = (over: Partial<DashboardSummary> = {}): DashboardSummar
   challengesCompleted: 0,
   attemptsCompleted: 0,
   recent: [],
+  ...over,
+});
+
+export const attemptCard = (over: Partial<AttemptCard> = {}): AttemptCard => ({
+  attemptId: 7,
+  challengeId: 1,
+  challengeTitle: "Read a DNS timeout and retry",
+  challengeVersion: 1,
+  status: "completed",
+  startedAt: "2026-11-24T10:00:00.000Z",
+  completedAt: "2026-11-24T10:30:00.000Z",
+  stepsCompleted: 4,
+  stepsTotal: 4,
   ...over,
 });

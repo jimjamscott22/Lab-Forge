@@ -11,6 +11,7 @@ const COMMANDS: &[&str] = &[
     "complete_step",
     "save_note",
     "get_dashboard",
+    "list_attempts",
     "open_external_link",
 ];
 

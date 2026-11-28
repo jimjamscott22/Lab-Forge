@@ -1,5 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 import type {
+  AttemptCard,
   AttemptView,
   ChallengeDetail,
   ChallengeSummary,
@@ -59,6 +60,7 @@ interface Commands {
   };
   save_note: { args: { attemptId: number; bodyMd: string }; result: Note };
   get_dashboard: { args: Record<string, never>; result: DashboardSummary };
+  list_attempts: { args: { challengeId: number | null }; result: AttemptCard[] };
   open_external_link: { args: { url: string }; result: void };
 }
 
@@ -86,5 +88,6 @@ export const api = {
     call("complete_step", { attemptId, stepId, choiceId }),
   saveNote: (attemptId: number, bodyMd: string) => call("save_note", { attemptId, bodyMd }),
   getDashboard: () => call("get_dashboard", {}),
+  listAttempts: (challengeId?: number) => call("list_attempts", { challengeId: challengeId ?? null }),
   openExternalLink: (url: string) => call("open_external_link", { url }),
 };

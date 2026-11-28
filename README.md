@@ -74,6 +74,7 @@ cargo test                                  # unit + database tests against real
 4. **Dashboard** shows "Continue your attempt" with 1 of 4 steps done. Press **Resume**:
    step 2 is current and your notebook text is back.
 5. Finish the attempt, then choose **Start another attempt**.
+6. Open **History**: both attempts are listed, and the first one still opens with its notes.
 
 ## Layout
 
