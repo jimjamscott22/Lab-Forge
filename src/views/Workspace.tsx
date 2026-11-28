@@ -163,6 +163,13 @@ function WorkspaceLoaded({ initial, navigate }: { initial: AttemptView; navigate
                 </button>
                 <button
                   type="button"
+                  onClick={() => navigate({ name: "history", challengeId: attempt.challengeId })}
+                  className="rounded border border-ink-600 px-4 py-2 hover:bg-ink-800"
+                >
+                  View attempt history
+                </button>
+                <button
+                  type="button"
                   onClick={() => navigate({ name: "dashboard" })}
                   className="rounded border border-ink-600 px-4 py-2 hover:bg-ink-800"
                 >

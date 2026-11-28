@@ -26,6 +26,8 @@ Includes: `tools` and `learning_paths` (+ ordered steps) tables, an attempt hist
 create and edit custom challenges (the commands already exist), more bundled content, and a
 SQLite online-backup snapshot with a test that restores it into a fresh data directory.
 
+Delivered: attempt history (`list_attempts`, History view).
+
 ## Milestone 3: Local lab pilot
 
 Simulated runtime first, then a controlled local HTTP fixture.

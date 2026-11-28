@@ -46,7 +46,8 @@ challenges 1--* attempts (status) 1--* attempt_steps (status, selected_choice_id
   because seeding skips an existing `(slug, version)`.
 - **Stable step identity.** Steps have a `step_key` plus an explicit `position`.
 - **Retries are new attempts.** A partial unique index allows one `in_progress` attempt per
-  challenge. Each attempt has its own notebook.
+  challenge. Each attempt has its own notebook. History (`list_attempts`) filters by `slug`, so
+  attempts on every version of a challenge appear together; it returns at most 200, newest first.
 - **Constraints in the schema.** Status sets are `CHECK`ed, `completed_at` must match
   `status`, a knowledge check has exactly one correct choice (partial unique index), and
   every reference has an explicit `ON DELETE`.
@@ -72,7 +73,7 @@ instances, and evidence records for findings. They arrive with the milestones th
 
 Commands: `list_challenges`, `get_challenge`, `create_challenge`, `update_challenge`,
 `delete_challenge`, `start_attempt`, `get_attempt`, `complete_step`, `save_note`,
-`get_dashboard`, `open_external_link`.
+`get_dashboard`, `list_attempts`, `open_external_link`.
 
 Adding one means touching four places, and a unit test fails if they disagree:
 the Rust command, `invoke_handler` in `lib.rs`, the list in `build.rs`, and the
@@ -86,8 +87,8 @@ as one generic message, so SQL and file paths never appear in the interface.
 
 - `api/client.ts` is the only place that calls `invoke`. A `Commands` interface types every
   command's arguments and result.
-- `App.tsx` is a three-view shell (Dashboard, Challenges, Workspace) with state-based routing;
-  a router library is not worth a dependency for three views.
+- `App.tsx` is a four-view shell (Dashboard, Challenges, History, Workspace) with state-based
+  routing; a router library is not worth a dependency for four views.
 - The workspace puts the step list, active instructions, packet summary and notebook on one
   screen. The notebook draft autosaves, never drops text when a save fails, and is flushed
   before a note step is submitted.

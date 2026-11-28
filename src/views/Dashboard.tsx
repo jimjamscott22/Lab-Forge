@@ -94,6 +94,15 @@ export function Dashboard({ navigate }: { navigate: (route: Route) => void }) {
             ))}
           </ul>
         )}
+        {recent.length > 0 && (
+          <button
+            type="button"
+            onClick={() => navigate({ name: "history" })}
+            className="mt-3 rounded border border-ink-600 px-3 py-1.5 hover:bg-ink-800"
+          >
+            See all attempts
+          </button>
+        )}
       </section>
     </div>
   );
